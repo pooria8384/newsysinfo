@@ -43,10 +43,8 @@ func NewScanner(lib *string) Iagent {
 	switch *lib {
 	case "gopsutil":
 		return NewGopsutil()
-	// case "standard":
-	// 	return &Standard{
-	// 		&SystemInfo{},
-	// 	}
+	case "standard":
+		return NewStandard()
 	default:
 		return NewGopsutil()
 	}

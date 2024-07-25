@@ -2,6 +2,7 @@ package main
 
 import (
 	"agent/sysinfo"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -29,41 +30,10 @@ func main() {
 
 	result := scanner.Get()
 
-	fmt.Println(*result)
+	jsonresult, err := json.MarshalIndent(result, "", " ")
+	if err != nil {
+		fmt.Printf("Failed to marshal system info: %v", err)
+	}
 
-	// systemInfoType := []string{"OS", "Disk", "RAM", "Cpu"}
-
-	// for _, sysType := range systemInfoType {
-	// 	sysType, err := sysinfo.NewSysInfo(sysType)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		continue
-	// 	}
-	// 	sysType.GetInfo()
-	// 	sysType.FetchInfo()
-
-	// }
-
-	// osInfo, err := sysinfo.FactorySysInfo("OS")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// osInfo.GatherInfo()
-	// osInfo.PrintInfo()
-
-	// for _, componentType := range componetsType {
-	// 	err, component := sysinfo.FactorySysInfo(componentType)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		continue
-	// 	}
-	// 	err,_ = sysinfo.FactorySysInfo(componentType)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		continue
-	// 	}
-
-	// 	component.Printable()
-	// }
-
+	fmt.Println(string(jsonresult))
 }
