@@ -33,6 +33,7 @@ func (s *Standard) Ram() (Iagent, error) {
 	r.Total = 0
 	r.Used = 0
 	r.UsedPercent = 0
+	s.SystemInfo.RamInfo = r
 	return s, nil
 }
 
@@ -41,6 +42,7 @@ func (s *Standard) Os() (Iagent, error) {
 	o.Hostname = "..."
 	o.OSArch = "..."
 	o.OSType = "..."
+	s.SystemInfo.OsInfo = o
 	return s, nil
 }
 
@@ -49,5 +51,6 @@ func (s *Standard) Disk() (Iagent, error) {
 	d.Device = "..."
 	d.FreeSize = 0
 	d.FreeSize = 0
+	s.SystemInfo.DiskInfo = d
 	return s, nil
 }

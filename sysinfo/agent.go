@@ -6,22 +6,22 @@ type CpuInfo struct {
 }
 
 type DiskInfo struct {
-	Device    string `json:"diskinfo_device"`
-	TotalSize uint64 `json:"diskinfo_totalsize"`
-	FreeSize  uint64 `json:"diskinfo_freesize"`
+	Device    string `json:"device"`
+	TotalSize uint64 `json:"totalsize"`
+	FreeSize  uint64 `json:"freesize"`
 }
 
 type OsInfo struct {
-	OSType   string `json:"os_type"`
-	OSArch   string `json:"os_arch"`
+	OSType   string `json:"type"`
+	OSArch   string `json:"arch"`
 	Hostname string `json:"hostname"`
 }
 
 type RamInfo struct {
-	Total       uint64  `json:"total_ram"`
-	Available   uint64  `json:"available_ram"`
-	Used        uint64  `json:"used_ram"`
-	UsedPercent float64 `json:"usedpercent_ram"`
+	Total       uint64  `json:"total"`
+	Available   uint64  `json:"available"`
+	Used        uint64  `json:"used"`
+	UsedPercent float64 `json:"usedpercent"`
 }
 
 type SystemInfo struct {
