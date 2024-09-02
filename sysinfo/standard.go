@@ -153,26 +153,54 @@ func (s *Standard) Disk() (Iagent, error) {
 	d := &DiskInfo{}
 
 	switch runtime.GOOS {
-	case "linux", "darwin":
-		output, err := exec.Command("sh", "-c", "df -k --output=size,avail / | tail -1").Output()
+	case "linux":
+		output, err := exec.Command("sh", "-c", "df -B1").Output()
 		if err != nil {
 			return nil, err
 		}
-		fields := strings.Fields(string(output))
-		if len(fields) >= 2 {
-			totalSize, err := strconv.ParseUint(fields[0], 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			d.TotalSize = int(totalSize * 1024)
+		lines := strings.Split(string(output), "\n")
 
-			freeSize, err := strconv.ParseUint(fields[1], 10, 64)
-			if err != nil {
-				return nil, err
+		for _, line := range lines[1:] {
+			fields := strings.Fields(line)
+			if len(fields) >= 6 {
+				totalSize, err := strconv.Atoi(fields[1])
+				if err != nil {
+					return nil, err
+				}
+				freeSize, err := strconv.Atoi(fields[3])
+				if err != nil {
+					return nil, err
+				}
+				d.Device = fields[0]
+				d.TotalSize = totalSize
+				d.FreeSize = freeSize
 			}
-			d.FreeSize = int(freeSize * 1024)
+		}
+	case "darwin":
+		output, err := exec.Command("sh", "-c", "df -B1").Output()
+		if err != nil {
+			return nil, err
+		}
+		lines := strings.Split(string(output), "\n")
+
+		for _, line := range lines[1:] {
+			fields := strings.Fields(line)
+			if len(fields) >= 6 {
+				totalSize, err := strconv.Atoi(fields[1])
+				if err != nil {
+					return nil, err
+				}
+				freeSize, err := strconv.Atoi(fields[3])
+				if err != nil {
+					return nil, err
+				}
+				d.Device = fields[0]
+				d.TotalSize = totalSize
+				d.FreeSize = freeSize
+			}
 		}
 	case "windows":
+
 		output, err := exec.Command("powershell", "Get-PSDrive", "-PSProvider", "FileSystem").Output()
 		if err != nil {
 			return nil, err
@@ -181,18 +209,21 @@ func (s *Standard) Disk() (Iagent, error) {
 		for _, line := range lines {
 			if strings.HasPrefix(line, "C") {
 				fields := strings.Fields(line)
-				totalSizeStr := fields[1]
-				freeSizeStr := fields[2]
-				totalSize, err := strconv.ParseUint(totalSizeStr, 10, 64)
-				if err != nil {
-					return nil, err
+				if len(fields) >= 5 {
+					totalSizeStr := fields[2]
+					freeSizeStr := fields[3]
+					totalSize, err := strconv.Atoi(totalSizeStr)
+					if err != nil {
+						return nil, err
+					}
+					freeSize, err := strconv.Atoi(freeSizeStr)
+					if err != nil {
+						return nil, err
+					}
+					d.Device = fields[0]
+					d.TotalSize = totalSize * 1024
+					d.FreeSize = freeSize * 1024
 				}
-				freeSize, err := strconv.ParseUint(freeSizeStr, 10, 64)
-				if err != nil {
-					return nil, err
-				}
-				d.TotalSize = int(totalSize * 1024)
-				d.FreeSize = int(freeSize * 1024)
 			}
 		}
 	}
