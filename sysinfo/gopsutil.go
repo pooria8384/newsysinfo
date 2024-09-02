@@ -17,10 +17,10 @@ type Gopsutil struct {
 func NewGopsutil() Iagent {
 	return &Gopsutil{
 		&SystemInfo{
-			OsInfo:   &OsInfo{},
-			DiskInfo: &DiskInfo{},
-			CpuInfo:  &CpuInfo{},
-			RamInfo:  &RamInfo{},
+			OsInfo:    &OsInfo{},
+			DiskInfos: []DiskInfo{},
+			CpuInfo:   &CpuInfo{},
+			RamInfo:   &RamInfo{},
 		},
 	}
 }
@@ -63,7 +63,8 @@ func (g *Gopsutil) Ram() (Iagent, error) {
 }
 
 func (g *Gopsutil) Disk() (Iagent, error) {
-	d := &DiskInfo{}
+	disks := []DiskInfo{}
+
 	partitions, err := disk.Partitions(false)
 	if err != nil {
 		return nil, fmt.Errorf("error getting disk partitions: %v", err)
@@ -72,15 +73,18 @@ func (g *Gopsutil) Disk() (Iagent, error) {
 	for _, partition := range partitions {
 		diskInfo, err := disk.Usage(partition.Mountpoint)
 		if err != nil {
-			fmt.Printf("error getting disk usage info for %s: %v", partition.Mountpoint, err)
+			return nil, fmt.Errorf("error getting disk usage info for %s: %v", partition.Mountpoint, err)
 		}
-		d.Device = partition.Device
-		d.TotalSize = int(diskInfo.Total)
-		d.FreeSize = int(diskInfo.Free)
-	}
-	g.SystemInfo.DiskInfo = d
-	return g, nil
 
+		disks = append(disks, DiskInfo{
+			Device:    partition.Device,
+			TotalSize: int(diskInfo.Total),
+			FreeSize:  int(diskInfo.Free),
+		})
+	}
+
+	g.SystemInfo.DiskInfos = disks
+	return g, nil
 }
 
 func (g *Gopsutil) Os() (Iagent, error) {

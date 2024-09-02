@@ -15,10 +15,10 @@ type Standard struct {
 func NewStandard() Iagent {
 	return &Standard{
 		&SystemInfo{
-			OsInfo:   &OsInfo{},
-			DiskInfo: &DiskInfo{},
-			CpuInfo:  &CpuInfo{},
-			RamInfo:  &RamInfo{},
+			OsInfo:    &OsInfo{},
+			DiskInfos: []DiskInfo{},
+			CpuInfo:   &CpuInfo{},
+			RamInfo:   &RamInfo{},
 		},
 	}
 }
@@ -148,9 +148,8 @@ func (s *Standard) Ram() (Iagent, error) {
 	s.SystemInfo.RamInfo = r
 	return s, nil
 }
-
 func (s *Standard) Disk() (Iagent, error) {
-	d := &DiskInfo{}
+	disks := []DiskInfo{}
 
 	switch runtime.GOOS {
 	case "linux":
@@ -160,9 +159,10 @@ func (s *Standard) Disk() (Iagent, error) {
 		}
 		lines := strings.Split(string(output), "\n")
 
-		for _, line := range lines[1:] {
+		for _, line := range lines[1:] { // Skip header line
 			fields := strings.Fields(line)
 			if len(fields) >= 6 {
+				device := fields[0]
 				totalSize, err := strconv.Atoi(fields[1])
 				if err != nil {
 					return nil, err
@@ -171,9 +171,11 @@ func (s *Standard) Disk() (Iagent, error) {
 				if err != nil {
 					return nil, err
 				}
-				d.Device = fields[0]
-				d.TotalSize = totalSize
-				d.FreeSize = freeSize
+				disks = append(disks, DiskInfo{
+					Device:    device,
+					TotalSize: totalSize,
+					FreeSize:  freeSize,
+				})
 			}
 		}
 	case "darwin":
@@ -183,9 +185,10 @@ func (s *Standard) Disk() (Iagent, error) {
 		}
 		lines := strings.Split(string(output), "\n")
 
-		for _, line := range lines[1:] {
+		for _, line := range lines[1:] { // Skip header line
 			fields := strings.Fields(line)
 			if len(fields) >= 6 {
+				device := fields[0]
 				totalSize, err := strconv.Atoi(fields[1])
 				if err != nil {
 					return nil, err
@@ -194,44 +197,46 @@ func (s *Standard) Disk() (Iagent, error) {
 				if err != nil {
 					return nil, err
 				}
-				d.Device = fields[0]
-				d.TotalSize = totalSize
-				d.FreeSize = freeSize
+				disks = append(disks, DiskInfo{
+					Device:    device,
+					TotalSize: totalSize,
+					FreeSize:  freeSize,
+				})
 			}
 		}
 	case "windows":
-
 		output, err := exec.Command("powershell", "Get-PSDrive", "-PSProvider", "FileSystem").Output()
 		if err != nil {
 			return nil, err
 		}
 		lines := strings.Split(string(output), "\n")
+
 		for _, line := range lines {
-			if strings.HasPrefix(line, "C") {
-				fields := strings.Fields(line)
-				if len(fields) >= 5 {
-					totalSizeStr := fields[2]
-					freeSizeStr := fields[3]
-					totalSize, err := strconv.Atoi(totalSizeStr)
-					if err != nil {
-						return nil, err
-					}
-					freeSize, err := strconv.Atoi(freeSizeStr)
-					if err != nil {
-						return nil, err
-					}
-					d.Device = fields[0]
-					d.TotalSize = totalSize * 1024
-					d.FreeSize = freeSize * 1024
+			fields := strings.Fields(line)
+			if len(fields) >= 4 {
+				device := fields[0]
+				totalSizeStr := fields[2]
+				freeSizeStr := fields[3]
+				totalSize, err := strconv.Atoi(totalSizeStr)
+				if err != nil {
+					return nil, err
 				}
+				freeSize, err := strconv.Atoi(freeSizeStr)
+				if err != nil {
+					return nil, err
+				}
+				disks = append(disks, DiskInfo{
+					Device:    device,
+					TotalSize: totalSize * 1024, // Convert to bytes
+					FreeSize:  freeSize * 1024,  // Convert to bytes
+				})
 			}
 		}
 	}
 
-	s.SystemInfo.DiskInfo = d
+	s.SystemInfo.DiskInfos = disks
 	return s, nil
 }
-
 func (s *Standard) Os() (Iagent, error) {
 	o := &OsInfo{}
 	o.OSType = runtime.GOOS

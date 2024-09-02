@@ -27,7 +27,7 @@ type RamInfo struct {
 type SystemInfo struct {
 	*OsInfo   `json:"os"`
 	*RamInfo  `json:"ram"`
-	*DiskInfo `json:"disk"`
+	DiskInfos []DiskInfo `json:"disk"`
 	*CpuInfo  `json:"cpu"`
 }
 
