@@ -52,7 +52,7 @@ func (s *Standard) Cpu() (Iagent, error) {
 		c.Modelname = "Unknown CPU Model"
 	}
 
-	c.Cores = int32(runtime.NumCPU())
+	c.Cores = int(runtime.NumCPU())
 	s.SystemInfo.CpuInfo = c
 	return s, nil
 }
@@ -71,7 +71,7 @@ func (s *Standard) Ram() (Iagent, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Total = memTotal * 1024
+		r.Total = int(memTotal * 1024)
 
 		output, err = exec.Command("sh", "-c", "grep MemAvailable /proc/meminfo").Output()
 		if err != nil {
@@ -82,7 +82,8 @@ func (s *Standard) Ram() (Iagent, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Available = memAvailable * 1024
+		r.Available = int(memAvailable * 1024)
+
 	case "darwin":
 		output, err := exec.Command("sysctl", "hw.memsize").Output()
 		if err != nil {
@@ -93,7 +94,7 @@ func (s *Standard) Ram() (Iagent, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Total = memTotal
+		r.Total = int(memTotal)
 
 		output, err = exec.Command("vm_stat").Output()
 		if err != nil {
@@ -113,7 +114,8 @@ func (s *Standard) Ram() (Iagent, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Available = pageFree * pageSizeInt
+		r.Available = int(pageFree * pageSizeInt)
+
 	case "windows":
 		output, err := exec.Command("powershell", "Get-WmiObject", "Win32_OperatingSystem").Output()
 		if err != nil {
@@ -127,7 +129,7 @@ func (s *Standard) Ram() (Iagent, error) {
 				if err != nil {
 					return nil, err
 				}
-				r.Total = memTotal * 1024
+				r.Total = int(memTotal * 1024)
 			}
 			if strings.Contains(line, "FreePhysicalMemory") {
 				memAvailableStr := strings.Fields(line)[2]
@@ -135,7 +137,7 @@ func (s *Standard) Ram() (Iagent, error) {
 				if err != nil {
 					return nil, err
 				}
-				r.Available = memAvailable * 1024
+				r.Available = int(memAvailable * 1024)
 			}
 		}
 	}
@@ -162,13 +164,13 @@ func (s *Standard) Disk() (Iagent, error) {
 			if err != nil {
 				return nil, err
 			}
-			d.TotalSize = totalSize * 1024
+			d.TotalSize = int(totalSize * 1024)
 
 			freeSize, err := strconv.ParseUint(fields[1], 10, 64)
 			if err != nil {
 				return nil, err
 			}
-			d.FreeSize = freeSize * 1024
+			d.FreeSize = int(freeSize * 1024)
 		}
 	case "windows":
 		output, err := exec.Command("powershell", "Get-PSDrive", "-PSProvider", "FileSystem").Output()
@@ -189,8 +191,8 @@ func (s *Standard) Disk() (Iagent, error) {
 				if err != nil {
 					return nil, err
 				}
-				d.TotalSize = totalSize
-				d.FreeSize = freeSize
+				d.TotalSize = int(totalSize * 1024)
+				d.FreeSize = int(freeSize * 1024)
 			}
 		}
 	}

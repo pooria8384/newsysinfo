@@ -31,9 +31,11 @@ func main() {
 	result := scanner.Get()
 
 	jsonresult, err := json.MarshalIndent(result, "", " ")
+
 	if err != nil {
 		fmt.Printf("Failed to marshal system info: %v", err)
 	}
 
 	fmt.Println(string(jsonresult))
+
 }

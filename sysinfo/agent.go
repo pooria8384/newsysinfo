@@ -2,13 +2,13 @@ package sysinfo
 
 type CpuInfo struct {
 	Modelname string `json:"model"`
-	Cores     int32  `json:"cores"`
+	Cores     int    `json:"cores"`
 }
 
 type DiskInfo struct {
 	Device    string `json:"device"`
-	TotalSize uint64 `json:"totalsize"`
-	FreeSize  uint64 `json:"freesize"`
+	TotalSize int    `json:"totalsize"`
+	FreeSize  int    `json:"freesize"`
 }
 
 type OsInfo struct {
@@ -18,9 +18,9 @@ type OsInfo struct {
 }
 
 type RamInfo struct {
-	Total       uint64  `json:"total"`
-	Available   uint64  `json:"available"`
-	Used        uint64  `json:"used"`
+	Total       int     `json:"total"`
+	Available   int     `json:"available"`
+	Used        int     `json:"used"`
 	UsedPercent float64 `json:"usedpercent"`
 }
 
