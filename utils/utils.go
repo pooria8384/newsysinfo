@@ -1,6 +1,8 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func KbToHumanReadable(kb uint) string {
 	const (
@@ -11,22 +13,27 @@ func KbToHumanReadable(kb uint) string {
 		petabyte = 1024 * terabyte
 		exabyte  = 1024 * petabyte
 	)
-	if kb >= exabyte {
-		exa := float64(kb) / exabyte
-		return fmt.Sprintf("%.2f EB", exa)
-	} else if kb >= petabyte {
-		peta := float64(kb) / petabyte
-		return fmt.Sprintf("%.2f PB", peta)
-	} else if kb >= terabyte {
-		tera := float64(kb) / terabyte
-		return fmt.Sprintf("%.2f TB", tera)
-	} else if kb >= gigabyte {
-		gig := float64(kb) / gigabyte
-		return fmt.Sprintf("%.2f GB", gig)
-	} else if kb >= megabyte {
-		mb := float64(kb) / megabyte
-		return fmt.Sprintf("%.2f MB", mb)
-	} else {
+
+	if kb == 0 {
+		return "0 KB"
+	}
+
+	if kb > exabyte {
+		return "Error: Value exceeds the exabyte limit"
+	}
+
+	switch {
+	case kb >= exabyte:
+		return fmt.Sprintf("%.2f EB", float64(kb)/float64(exabyte))
+	case kb >= petabyte:
+		return fmt.Sprintf("%.2f PB", float64(kb)/float64(petabyte))
+	case kb >= terabyte:
+		return fmt.Sprintf("%.2f TB", float64(kb)/float64(terabyte))
+	case kb >= gigabyte:
+		return fmt.Sprintf("%.2f GB", float64(kb)/float64(gigabyte))
+	case kb >= megabyte:
+		return fmt.Sprintf("%.2f MB", float64(kb)/float64(megabyte))
+	default:
 		return fmt.Sprintf("%d KB", kb)
 	}
 
