@@ -39,7 +39,7 @@ func (g *Gopsutil) Cpu() (Iagent, error) {
 
 	if len(data) > 0 {
 		cpuInfo.Modelname = data[0].ModelName
-		cpuInfo.Cores = int(data[0].Cores)
+		cpuInfo.Cores = uint32(data[0].Cores)
 	}
 	g.SystemInfo.CpuInfo = cpuInfo
 	return g, nil
@@ -53,9 +53,9 @@ func (g *Gopsutil) Ram() (Iagent, error) {
 		return nil, fmt.Errorf("error getting memory info: %v", err)
 	}
 
-	ram.Total = int(vmStat.Total)
-	ram.Available = int(vmStat.Available)
-	ram.Used = int(vmStat.Used)
+	ram.Total = uint32(vmStat.Total)
+	ram.Available = uint32(vmStat.Available)
+	ram.Used = uint32(vmStat.Used)
 	ram.UsedPercent = vmStat.UsedPercent
 
 	g.SystemInfo.RamInfo = ram
@@ -78,8 +78,8 @@ func (g *Gopsutil) Disk() (Iagent, error) {
 
 		disks = append(disks, DiskInfo{
 			Device:    partition.Device,
-			TotalSize: int(diskInfo.Total),
-			FreeSize:  int(diskInfo.Free),
+			TotalSize: uint32(diskInfo.Total),
+			FreeSize:  uint32(diskInfo.Free),
 		})
 	}
 

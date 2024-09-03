@@ -52,7 +52,7 @@ func (s *Standard) Cpu() (Iagent, error) {
 		c.Modelname = "Unknown CPU Model"
 	}
 
-	c.Cores = int(runtime.NumCPU())
+	c.Cores = uint32(runtime.NumCPU())
 	s.SystemInfo.CpuInfo = c
 	return s, nil
 }
@@ -71,7 +71,7 @@ func (s *Standard) Ram() (Iagent, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Total = int(memTotal * 1024)
+		r.Total = uint32(memTotal)
 
 		output, err = exec.Command("sh", "-c", "grep MemAvailable /proc/meminfo").Output()
 		if err != nil {
@@ -82,7 +82,7 @@ func (s *Standard) Ram() (Iagent, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Available = int(memAvailable * 1024)
+		r.Available = uint32(memAvailable)
 
 	case "darwin":
 		output, err := exec.Command("sysctl", "hw.memsize").Output()
@@ -94,7 +94,7 @@ func (s *Standard) Ram() (Iagent, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Total = int(memTotal)
+		r.Total = uint32(memTotal)
 
 		output, err = exec.Command("vm_stat").Output()
 		if err != nil {
@@ -114,7 +114,7 @@ func (s *Standard) Ram() (Iagent, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Available = int(pageFree * pageSizeInt)
+		r.Available = uint32(pageFree * pageSizeInt)
 
 	case "windows":
 		output, err := exec.Command("powershell", "Get-WmiObject", "Win32_OperatingSystem").Output()
@@ -129,7 +129,7 @@ func (s *Standard) Ram() (Iagent, error) {
 				if err != nil {
 					return nil, err
 				}
-				r.Total = int(memTotal * 1024)
+				r.Total = uint32(memTotal)
 			}
 			if strings.Contains(line, "FreePhysicalMemory") {
 				memAvailableStr := strings.Fields(line)[2]
@@ -137,7 +137,7 @@ func (s *Standard) Ram() (Iagent, error) {
 				if err != nil {
 					return nil, err
 				}
-				r.Available = int(memAvailable * 1024)
+				r.Available = uint32(memAvailable)
 			}
 		}
 	}
@@ -173,8 +173,8 @@ func (s *Standard) Disk() (Iagent, error) {
 				}
 				disks = append(disks, DiskInfo{
 					Device:    device,
-					TotalSize: totalSize,
-					FreeSize:  freeSize,
+					TotalSize: uint32(totalSize),
+					FreeSize:  uint32(freeSize),
 				})
 			}
 		}
@@ -199,8 +199,8 @@ func (s *Standard) Disk() (Iagent, error) {
 				}
 				disks = append(disks, DiskInfo{
 					Device:    device,
-					TotalSize: totalSize,
-					FreeSize:  freeSize,
+					TotalSize: uint32(totalSize),
+					FreeSize:  uint32(freeSize),
 				})
 			}
 		}
@@ -227,8 +227,8 @@ func (s *Standard) Disk() (Iagent, error) {
 				}
 				disks = append(disks, DiskInfo{
 					Device:    device,
-					TotalSize: totalSize * 1024, // Convert to bytes
-					FreeSize:  freeSize * 1024,  // Convert to bytes
+					TotalSize: uint32(totalSize),
+					FreeSize:  uint32(freeSize),
 				})
 			}
 		}
