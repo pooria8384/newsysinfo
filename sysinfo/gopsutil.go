@@ -52,9 +52,9 @@ func (g *Gopsutil) Ram() error {
 	if err != nil {
 		return fmt.Errorf("error getting memory info: %v", err)
 	}
-	ram.Total = utils.KbToHumanReadable(uint(vmStat.VMallocTotal))
-	ram.Available = utils.KbToHumanReadable(uint(vmStat.Available))
-	ram.Used = utils.KbToHumanReadable(uint(vmStat.Used))
+	ram.Total = utils.ToHuman(float32(vmStat.VMallocTotal/1024), 0)
+	ram.Available = utils.ToHuman(float32(vmStat.Available), 0)
+	ram.Used = utils.ToHuman(float32(vmStat.Used), 0)
 	ram.UsedPercent = fmt.Sprintf("%.2f %s", vmStat.UsedPercent, "%")
 
 	g.SystemInfo.RamInfo = ram
@@ -97,8 +97,8 @@ func (g *Gopsutil) Disk() error {
 		g.SystemInfo.DiskInfos = append(g.SystemInfo.DiskInfos,
 			DiskInfo{
 				Device:    dev,
-				TotalSize: utils.KbToHumanReadable(dsk.total),
-				FreeSize:  utils.KbToHumanReadable(dsk.free),
+				TotalSize: utils.ToHuman(float32(dsk.total), 0),
+				FreeSize:  utils.ToHuman(float32(dsk.free), 0),
 			},
 		)
 	}

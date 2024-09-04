@@ -4,37 +4,26 @@ import (
 	"fmt"
 )
 
-func KbToHumanReadable(kb uint) string {
-	const (
-		kilobyte = 1
-		megabyte = 1024
-		gigabyte = 1024 * megabyte
-		terabyte = 1024 * gigabyte
-		petabyte = 1024 * terabyte
-		exabyte  = 1024 * petabyte
-	)
-
-	if kb == 0 {
-		return "0 KB"
+func ToHuman(n float32, counter int) string {
+	if n < 1024 {
+		return fmt.Sprintf("%.2f %s", float32(n), getUnit(counter))
 	}
+	return ToHuman(float32(n)/1024, counter+1)
+}
 
-	if kb > exabyte {
-		return "Error: Value exceeds the exabyte limit"
-	}
-
-	switch {
-	case kb >= exabyte:
-		return fmt.Sprintf("%.2f EB", float64(kb)/float64(exabyte))
-	case kb >= petabyte:
-		return fmt.Sprintf("%.2f PB", float64(kb)/float64(petabyte))
-	case kb >= terabyte:
-		return fmt.Sprintf("%.2f TB", float64(kb)/float64(terabyte))
-	case kb >= gigabyte:
-		return fmt.Sprintf("%.2f GB", float64(kb)/float64(gigabyte))
-	case kb >= megabyte:
-		return fmt.Sprintf("%.2f MB", float64(kb)/float64(megabyte))
+func getUnit(n int) string {
+	switch n {
+	case 0:
+		return "B"
+	case 1:
+		return "KB"
+	case 2:
+		return "MB"
+	case 3:
+		return "GB"
+	case 4:
+		return "TB"
 	default:
-		return fmt.Sprintf("%d KB", kb)
+		return "B"
 	}
-
 }
