@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 )
 
 func main() {
@@ -35,6 +36,15 @@ func main() {
 	if err != nil {
 		fmt.Printf("Failed to marshal system info: %v", err)
 	}
-	// _ = jsonresult
-	fmt.Println(string(jsonresult))
+
+	file, err := os.Create("info.json")
+	if err != nil {
+		log.Println("There is an error: " + err.Error())
+	}
+	defer file.Close()
+
+	_, err = file.Write(jsonresult)
+	if err != nil {
+		log.Println("There is an error: " + err.Error())
+	}
 }
