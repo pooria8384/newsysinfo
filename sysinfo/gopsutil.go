@@ -29,12 +29,12 @@ func (g *Gopsutil) Get() *SystemInfo {
 	return g.SystemInfo
 }
 
-func (g *Gopsutil) Cpu() (Iagent, error) {
+func (g *Gopsutil) Cpu() error {
 	cpuInfo := &CpuInfo{}
 
 	data, err := cpu.Info()
 	if err != nil {
-		return nil, fmt.Errorf("error getting CPU info: %v", err)
+		return fmt.Errorf("error getting CPU info: %v", err)
 	}
 
 	if len(data) > 0 {
@@ -42,15 +42,15 @@ func (g *Gopsutil) Cpu() (Iagent, error) {
 		cpuInfo.Cores = uint32(data[0].Cores)
 	}
 	g.SystemInfo.CpuInfo = cpuInfo
-	return g, nil
+	return nil
 }
 
-func (g *Gopsutil) Ram() (Iagent, error) {
+func (g *Gopsutil) Ram() error {
 	ram := &RamInfo{}
 
 	vmStat, err := mem.VirtualMemory()
 	if err != nil {
-		return nil, fmt.Errorf("error getting memory info: %v", err)
+		return fmt.Errorf("error getting memory info: %v", err)
 	}
 
 	ram.Total = uint32(vmStat.Total)
@@ -59,21 +59,21 @@ func (g *Gopsutil) Ram() (Iagent, error) {
 	ram.UsedPercent = vmStat.UsedPercent
 
 	g.SystemInfo.RamInfo = ram
-	return g, nil
+	return nil
 }
 
-func (g *Gopsutil) Disk() (Iagent, error) {
+func (g *Gopsutil) Disk() error {
 	disks := []DiskInfo{}
 
 	partitions, err := disk.Partitions(false)
 	if err != nil {
-		return nil, fmt.Errorf("error getting disk partitions: %v", err)
+		return fmt.Errorf("error getting disk partitions: %v", err)
 	}
 
 	for _, partition := range partitions {
 		diskInfo, err := disk.Usage(partition.Mountpoint)
 		if err != nil {
-			return nil, fmt.Errorf("error getting disk usage info for %s: %v", partition.Mountpoint, err)
+			return fmt.Errorf("error getting disk usage info for %s: %v", partition.Mountpoint, err)
 		}
 
 		disks = append(disks, DiskInfo{
@@ -84,10 +84,10 @@ func (g *Gopsutil) Disk() (Iagent, error) {
 	}
 
 	g.SystemInfo.DiskInfos = disks
-	return g, nil
+	return nil
 }
 
-func (g *Gopsutil) Os() (Iagent, error) {
+func (g *Gopsutil) Os() error {
 	o := &OsInfo{}
 	o.OSType = runtime.GOOS
 	o.OSArch = runtime.GOARCH
@@ -95,11 +95,11 @@ func (g *Gopsutil) Os() (Iagent, error) {
 	hostName, err := os.Hostname()
 
 	if err != nil {
-		return nil, fmt.Errorf("error getting hostname: %v", err)
+		return fmt.Errorf("error getting hostname: %v", err)
 	}
 	o.Hostname = hostName
 
 	g.SystemInfo.OsInfo = o
 
-	return g, nil
+	return nil
 }

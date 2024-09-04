@@ -32,10 +32,10 @@ type SystemInfo struct {
 }
 
 type Iagent interface {
-	Cpu() (Iagent, error)
-	Ram() (Iagent, error)
-	Disk() (Iagent, error)
-	Os() (Iagent, error)
+	Cpu() error
+	Ram() error
+	Disk() error
+	Os() error
 	Get() *SystemInfo
 }
 

@@ -15,16 +15,16 @@ func main() {
 	flag.Parse()
 
 	scanner := sysinfo.NewScanner(lib)
-	if _, err := scanner.Cpu(); err != nil {
+	if err := scanner.Cpu(); err != nil {
 		log.Println("Failed to fetch CPU info")
 	}
-	if _, err := scanner.Os(); err != nil {
+	if err := scanner.Os(); err != nil {
 		log.Println("Failed to fetch OS info")
 	}
-	if _, err := scanner.Disk(); err != nil {
+	if err := scanner.Disk(); err != nil {
 		log.Println("Failed to fetch Disk info")
 	}
-	if _, err := scanner.Ram(); err != nil {
+	if err := scanner.Ram(); err != nil {
 		log.Println("Failed to fetch RAM info")
 	}
 
@@ -35,6 +35,6 @@ func main() {
 	if err != nil {
 		fmt.Printf("Failed to marshal system info: %v", err)
 	}
-
-	fmt.Println(string(jsonresult))
+	_ = jsonresult
+	// fmt.Println(string(jsonresult))
 }
