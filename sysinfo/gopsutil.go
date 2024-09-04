@@ -1,6 +1,7 @@
 package sysinfo
 
 import (
+	"agent/utils"
 	"fmt"
 	"os"
 	"runtime"
@@ -36,10 +37,9 @@ func (g *Gopsutil) Cpu() error {
 	if err != nil {
 		return fmt.Errorf("error getting CPU info: %v", err)
 	}
-
 	if len(data) > 0 {
 		cpuInfo.Modelname = data[0].ModelName
-		cpuInfo.Cores = uint32(data[0].Cores)
+		cpuInfo.Cores = uint32(len(data))
 	}
 	g.SystemInfo.CpuInfo = cpuInfo
 	return nil
@@ -52,18 +52,20 @@ func (g *Gopsutil) Ram() error {
 	if err != nil {
 		return fmt.Errorf("error getting memory info: %v", err)
 	}
-
-	ram.Total = uint32(vmStat.Total)
-	ram.Available = uint32(vmStat.Available)
-	ram.Used = uint32(vmStat.Used)
-	ram.UsedPercent = vmStat.UsedPercent
+	ram.Total = utils.KbToHumanReadable(uint(vmStat.VMallocTotal))
+	ram.Available = utils.KbToHumanReadable(uint(vmStat.Available))
+	ram.Used = utils.KbToHumanReadable(uint(vmStat.Used))
+	ram.UsedPercent = fmt.Sprintf("%.2f %s", vmStat.UsedPercent, "%")
 
 	g.SystemInfo.RamInfo = ram
 	return nil
 }
 
 func (g *Gopsutil) Disk() error {
-	disks := []DiskInfo{}
+	disks := map[string]struct {
+		total uint
+		free  uint
+	}{}
 
 	partitions, err := disk.Partitions(false)
 	if err != nil {
@@ -75,15 +77,31 @@ func (g *Gopsutil) Disk() error {
 		if err != nil {
 			return fmt.Errorf("error getting disk usage info for %s: %v", partition.Mountpoint, err)
 		}
-
-		disks = append(disks, DiskInfo{
-			Device:    partition.Device,
-			TotalSize: uint32(diskInfo.Total),
-			FreeSize:  uint32(diskInfo.Free),
-		})
+		deviceName := disk.GetDiskSerialNumber(partition.Device)
+		if existsDevice, ok := disks[deviceName]; ok {
+			existsDevice.total += uint(diskInfo.Total)
+			existsDevice.free += uint(diskInfo.Free)
+			disks[deviceName] = existsDevice
+		} else {
+			disks[deviceName] = struct {
+				total uint
+				free  uint
+			}{
+				total: uint(diskInfo.Total),
+				free:  uint(diskInfo.Free),
+			}
+		}
 	}
 
-	g.SystemInfo.DiskInfos = disks
+	for dev, dsk := range disks {
+		g.SystemInfo.DiskInfos = append(g.SystemInfo.DiskInfos,
+			DiskInfo{
+				Device:    dev,
+				TotalSize: utils.KbToHumanReadable(dsk.total),
+				FreeSize:  utils.KbToHumanReadable(dsk.free),
+			},
+		)
+	}
 	return nil
 }
 

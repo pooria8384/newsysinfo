@@ -7,8 +7,8 @@ type CpuInfo struct {
 
 type DiskInfo struct {
 	Device    string `json:"device"`
-	TotalSize uint32 `json:"totalsize"`
-	FreeSize  uint32 `json:"freesize"`
+	TotalSize string `json:"totalsize"`
+	FreeSize  string `json:"freesize"`
 }
 
 type OsInfo struct {
@@ -18,10 +18,10 @@ type OsInfo struct {
 }
 
 type RamInfo struct {
-	Total       uint32  `json:"total"`
-	Available   uint32  `json:"available"`
-	Used        uint32  `json:"used"`
-	UsedPercent float64 `json:"usedpercent"`
+	Total       string `json:"total"`
+	Available   string `json:"available"`
+	Used        string `json:"used"`
+	UsedPercent string `json:"usedpercent"`
 }
 
 type SystemInfo struct {
@@ -43,8 +43,8 @@ func NewScanner(lib *string) Iagent {
 	switch *lib {
 	case "gopsutil":
 		return NewGopsutil()
-	case "standard":
-		return NewStandard()
+	// case "standard":
+	// 	return NewStandard()
 	default:
 		return NewGopsutil()
 	}

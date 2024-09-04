@@ -35,6 +35,6 @@ func main() {
 	if err != nil {
 		fmt.Printf("Failed to marshal system info: %v", err)
 	}
-	_ = jsonresult
-	// fmt.Println(string(jsonresult))
+	// _ = jsonresult
+	fmt.Println(string(jsonresult))
 }

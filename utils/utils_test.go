@@ -48,9 +48,9 @@ func TestBytesToHumanReadable(t *testing.T) {
 			want: "Error: Value exceeds the exabyte limit",
 		},
 		{
-			name: "1 KB",
-			arg:  1,
-			want: "1 KB",
+			name: "My laptop ram",
+			arg:  35184372087808,
+			want: "32.00 GB",
 		},
 	}
 
