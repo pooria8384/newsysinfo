@@ -31,7 +31,8 @@ func TestBytesToHumanReadable(t *testing.T) {
 			name: "should convert to PB",
 			arg:  1024 * 1024 * 1024 * 1024,
 			want: "1.00 PB",
-		}, {
+		},
+		{
 			name: "Should fail for negative values",
 			arg:  -1,
 			want: "Error: Value exceeds the exabyte limit",
@@ -40,10 +41,16 @@ func TestBytesToHumanReadable(t *testing.T) {
 			name: "sould convert to EB",
 			arg:  1024 * 1024 * 1024 * 1024 * 1024,
 			want: "1.00 EB",
-		}, {
+		},
+		{
 			name: "bigger than EB",
 			arg:  1024 * 1024 * 1024 * 1024 * 1024 * 1024,
 			want: "Error: Value exceeds the exabyte limit",
+		},
+		{
+			name: "1 KB",
+			arg:  1,
+			want: "1 KB",
 		},
 	}
 
