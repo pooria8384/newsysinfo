@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
@@ -23,6 +25,7 @@ func NewUnixLike() Iagent {
 			DiskInfos: []DiskInfo{},
 			CpuInfo:   &CpuInfo{},
 			RamInfo:   &RamInfo{},
+			USBDevs:   []USBDevs{},
 		},
 	}
 }
@@ -123,6 +126,26 @@ func (u *UnixLike) Os() error {
 	return nil
 }
 
+func (u *UnixLike) USB() error {
+	out, err := exec.Command("lsusb").Output()
+	if err != nil {
+		return fmt.Errorf("error getting USB devices: %v", err)
+	}
+
+	output := string(out)
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if line != "" {
+			u.SystemInfo.USBDevs = append(u.SystemInfo.USBDevs,
+				USBDevs{
+					Device: line,
+				},
+			)
+		}
+	}
+	return nil
+}
+
 func (u *UnixLike) Do() {
 	if err := u.Cpu(); err != nil {
 		log.Println("Failed to fetch CPU info")
@@ -135,5 +158,8 @@ func (u *UnixLike) Do() {
 	}
 	if err := u.Ram(); err != nil {
 		log.Println("Failed to fetch RAM info")
+	}
+	if err := u.USB(); err != nil {
+		log.Println("Failed to fetch USB info")
 	}
 }

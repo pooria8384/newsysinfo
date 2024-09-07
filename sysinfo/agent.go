@@ -26,11 +26,16 @@ type RamInfo struct {
 	UsedPercent string `json:"usedpercent"`
 }
 
+type USBDevs struct {
+	Device string `json:"device"`
+}
+
 type SystemInfo struct {
 	*OsInfo   `json:"os"`
 	*RamInfo  `json:"ram"`
 	DiskInfos []DiskInfo `json:"disk"`
 	*CpuInfo  `json:"cpu"`
+	USBDevs   []USBDevs
 }
 
 type Iagent interface {
@@ -38,6 +43,7 @@ type Iagent interface {
 	Ram() error
 	Disk() error
 	Os() error
+	USB() error
 	Get() *SystemInfo
 	Do()
 }
