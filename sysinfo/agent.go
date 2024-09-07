@@ -1,5 +1,7 @@
 package sysinfo
 
+import "runtime"
+
 type CpuInfo struct {
 	Modelname string `json:"model"`
 	Cores     uint32 `json:"cores"`
@@ -39,13 +41,13 @@ type Iagent interface {
 	Get() *SystemInfo
 }
 
-func NewScanner(lib *string) Iagent {
-	switch *lib {
-	case "gopsutil":
-		return NewGopsutil()
-	// case "standard":
-	// 	return NewStandard()
+func NewScanner() Iagent {
+	osType := runtime.GOOS
+	switch osType {
+	case "windows":
+		return nil
+		// 	return NewWindows()
 	default:
-		return NewGopsutil()
+		return NewUnixLike()
 	}
 }

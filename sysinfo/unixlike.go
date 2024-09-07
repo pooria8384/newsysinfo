@@ -15,7 +15,7 @@ type Gopsutil struct {
 	*SystemInfo
 }
 
-func NewGopsutil() Iagent {
+func NewUnixLike() Iagent {
 	return &Gopsutil{
 		&SystemInfo{
 			OsInfo:    &OsInfo{},

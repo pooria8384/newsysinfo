@@ -3,7 +3,6 @@ package main
 import (
 	"agent/sysinfo"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -11,11 +10,7 @@ import (
 
 func main() {
 
-	lib := flag.String("lib", "gopsutil", "Choose a library")
-
-	flag.Parse()
-
-	scanner := sysinfo.NewScanner(lib)
+	scanner := sysinfo.NewScanner()
 	if err := scanner.Cpu(); err != nil {
 		log.Println("Failed to fetch CPU info")
 	}
