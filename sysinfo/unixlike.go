@@ -3,6 +3,7 @@ package sysinfo
 import (
 	"agent/utils"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 
@@ -11,12 +12,12 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
-type Gopsutil struct {
+type UnixLike struct {
 	*SystemInfo
 }
 
 func NewUnixLike() Iagent {
-	return &Gopsutil{
+	return &UnixLike{
 		&SystemInfo{
 			OsInfo:    &OsInfo{},
 			DiskInfos: []DiskInfo{},
@@ -26,11 +27,11 @@ func NewUnixLike() Iagent {
 	}
 }
 
-func (g *Gopsutil) Get() *SystemInfo {
-	return g.SystemInfo
+func (u *UnixLike) Get() *SystemInfo {
+	return u.SystemInfo
 }
 
-func (g *Gopsutil) Cpu() error {
+func (u *UnixLike) Cpu() error {
 	cpuInfo := &CpuInfo{}
 
 	data, err := cpu.Info()
@@ -41,11 +42,11 @@ func (g *Gopsutil) Cpu() error {
 		cpuInfo.Modelname = data[0].ModelName
 		cpuInfo.Cores = uint32(len(data))
 	}
-	g.SystemInfo.CpuInfo = cpuInfo
+	u.SystemInfo.CpuInfo = cpuInfo
 	return nil
 }
 
-func (g *Gopsutil) Ram() error {
+func (u *UnixLike) Ram() error {
 	ram := &RamInfo{}
 
 	vmStat, err := mem.VirtualMemory()
@@ -57,11 +58,11 @@ func (g *Gopsutil) Ram() error {
 	ram.Used = utils.ToHuman(float32(vmStat.Used), 0)
 	ram.UsedPercent = fmt.Sprintf("%.2f %s", vmStat.UsedPercent, "%")
 
-	g.SystemInfo.RamInfo = ram
+	u.SystemInfo.RamInfo = ram
 	return nil
 }
 
-func (g *Gopsutil) Disk() error {
+func (u *UnixLike) Disk() error {
 	disks := map[string]struct {
 		total uint
 		free  uint
@@ -94,7 +95,7 @@ func (g *Gopsutil) Disk() error {
 	}
 
 	for dev, dsk := range disks {
-		g.SystemInfo.DiskInfos = append(g.SystemInfo.DiskInfos,
+		u.SystemInfo.DiskInfos = append(u.SystemInfo.DiskInfos,
 			DiskInfo{
 				Device:    dev,
 				TotalSize: utils.ToHuman(float32(dsk.total), 0),
@@ -105,7 +106,7 @@ func (g *Gopsutil) Disk() error {
 	return nil
 }
 
-func (g *Gopsutil) Os() error {
+func (u *UnixLike) Os() error {
 	o := &OsInfo{}
 	o.OSType = runtime.GOOS
 	o.OSArch = runtime.GOARCH
@@ -117,7 +118,22 @@ func (g *Gopsutil) Os() error {
 	}
 	o.Hostname = hostName
 
-	g.SystemInfo.OsInfo = o
+	u.SystemInfo.OsInfo = o
 
 	return nil
+}
+
+func (u *UnixLike) Do() {
+	if err := u.Cpu(); err != nil {
+		log.Println("Failed to fetch CPU info")
+	}
+	if err := u.Os(); err != nil {
+		log.Println("Failed to fetch OS info")
+	}
+	if err := u.Disk(); err != nil {
+		log.Println("Failed to fetch Disk info")
+	}
+	if err := u.Ram(); err != nil {
+		log.Println("Failed to fetch RAM info")
+	}
 }

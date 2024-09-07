@@ -39,6 +39,7 @@ type Iagent interface {
 	Disk() error
 	Os() error
 	Get() *SystemInfo
+	Do()
 }
 
 func NewScanner() Iagent {
