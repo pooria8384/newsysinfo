@@ -4,7 +4,7 @@ import "runtime"
 
 type CpuInfo struct {
 	Modelname string `json:"model"`
-	Cores     uint32 `json:"cores"`
+	Cores     uint64 `json:"cores"`
 }
 
 type DiskInfo struct {
@@ -20,10 +20,8 @@ type OsInfo struct {
 }
 
 type RamInfo struct {
-	Total       string `json:"total"`
-	Available   string `json:"available"`
-	Used        string `json:"used"`
-	UsedPercent string `json:"usedpercent"`
+	Total string `json:"total"`
+	Free  string `json:"free"`
 }
 
 type USBDevs struct {

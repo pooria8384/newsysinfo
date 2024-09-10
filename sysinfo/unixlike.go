@@ -2,6 +2,7 @@ package sysinfo
 
 import (
 	"agent/utils"
+	"bufio"
 	"bytes"
 	"fmt"
 	"log"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
-	"github.com/shirou/gopsutil/mem"
 )
 
 type UnixLike struct {
@@ -44,7 +44,7 @@ func (u *UnixLike) Cpu() error {
 	}
 	if len(data) > 0 {
 		cpuInfo.Modelname = data[0].ModelName
-		cpuInfo.Cores = uint32(len(data))
+		cpuInfo.Cores = uint64(len(data))
 	}
 	u.SystemInfo.CpuInfo = cpuInfo
 	return nil
@@ -53,15 +53,31 @@ func (u *UnixLike) Cpu() error {
 func (u *UnixLike) Ram() error {
 	ram := &RamInfo{}
 
-	vmStat, err := mem.VirtualMemory()
+	file, err := os.Open("/proc/meminfo")
 	if err != nil {
-		return fmt.Errorf("error getting memory info: %v", err)
+		return fmt.Errorf("error getting meminfo: %v", err)
 	}
-	ram.Total = utils.ToHuman(float32(vmStat.VMallocTotal/1024), 0)
-	ram.Available = utils.ToHuman(float32(vmStat.Available), 0)
-	ram.Used = utils.ToHuman(float32(vmStat.Used), 0)
-	ram.UsedPercent = fmt.Sprintf("%.2f %s", vmStat.UsedPercent, "%")
-
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "MemTotal:") {
+			fields := strings.Fields(line)
+			if len(fields) >= 2 {
+				var totalRAM uint64
+				fmt.Sscanf(fields[1], "%d", &totalRAM)
+				ram.Total = utils.ToHuman(float64(totalRAM), 1)
+			}
+		}
+		if strings.HasPrefix(line, "MemFree:") {
+			fields := strings.Fields(line)
+			if len(fields) >= 2 {
+				var freeRAM uint64
+				fmt.Sscanf(fields[1], "%d", &freeRAM)
+				ram.Free = utils.ToHuman(float64(freeRAM), 1)
+			}
+		}
+	}
 	u.SystemInfo.RamInfo = ram
 	return nil
 }
@@ -102,8 +118,8 @@ func (u *UnixLike) Disk() error {
 		u.SystemInfo.DiskInfos = append(u.SystemInfo.DiskInfos,
 			DiskInfo{
 				Device:    dev,
-				TotalSize: utils.ToHuman(float32(dsk.total), 0),
-				FreeSize:  utils.ToHuman(float32(dsk.free), 0),
+				TotalSize: utils.ToHuman(float64(dsk.total), 0),
+				FreeSize:  utils.ToHuman(float64(dsk.free), 0),
 			},
 		)
 	}

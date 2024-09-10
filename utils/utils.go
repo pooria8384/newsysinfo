@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-func ToHuman(n float32, counter int) string {
+func ToHuman(n float64, counter int) string {
 	if n < 1024 {
-		return fmt.Sprintf("%.2f %s", float32(n), getUnit(counter))
+		return fmt.Sprintf("%.2f %s", float64(n), getUnit(counter))
 	}
-	return ToHuman(float32(n)/1024, counter+1)
+	return ToHuman(float64(n)/1024, counter+1)
 }
 
 func getUnit(n int) string {
