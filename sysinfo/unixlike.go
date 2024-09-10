@@ -112,11 +112,15 @@ func (u *UnixLike) Disk() error {
 
 func (u *UnixLike) Os() error {
 	o := &OsInfo{}
+	cmd := exec.Command("uname", "-m")
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("error getting uname: %v", err)
+	}
+	o.OSArch = strings.TrimSpace(string(output))
 	o.OSType = runtime.GOOS
-	o.OSArch = runtime.GOARCH
 
 	hostName, err := os.Hostname()
-
 	if err != nil {
 		return fmt.Errorf("error getting hostname: %v", err)
 	}
