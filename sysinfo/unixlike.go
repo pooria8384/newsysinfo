@@ -87,14 +87,6 @@ func (u *UnixLike) Ram() error {
 				ram.Total = utils.ToHuman(float64(totalRAM), 1)
 			}
 		}
-		if strings.HasPrefix(line, "MemFree:") {
-			fields := strings.Fields(line)
-			if len(fields) >= 2 {
-				var freeRAM uint64
-				fmt.Sscanf(fields[1], "%d", &freeRAM)
-				ram.Free = utils.ToHuman(float64(freeRAM), 1)
-			}
-		}
 	}
 	u.SystemInfo.RamInfo = ram
 	return nil

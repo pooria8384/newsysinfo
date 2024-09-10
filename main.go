@@ -2,6 +2,7 @@ package main
 
 import (
 	"agent/sysinfo"
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +10,11 @@ import (
 )
 
 func main() {
+
+	currentInfo, err := hashFile("info.json")
+	if err != nil {
+		fmt.Println("Creating info.json file for first time")
+	}
 
 	scanner := sysinfo.NewScanner()
 	scanner.Do()
@@ -30,4 +36,24 @@ func main() {
 	if err != nil {
 		log.Println("There is an error: " + err.Error())
 	}
+
+	newInfo, err := hashFile("info.json")
+	if err != nil {
+		fmt.Printf("Failed to get file hashing info: %v", err)
+	}
+
+	if currentInfo != newInfo {
+		fmt.Println("There is somthing change")
+	} else {
+		fmt.Println("There is nothing change")
+	}
+
+}
+
+func hashFile(filePath string) ([16]byte, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return [16]byte{}, err
+	}
+	return md5.Sum(data), nil
 }

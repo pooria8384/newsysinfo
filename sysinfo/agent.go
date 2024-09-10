@@ -21,7 +21,6 @@ type OsInfo struct {
 
 type RamInfo struct {
 	Total string `json:"total"`
-	Free  string `json:"free"`
 }
 
 type USBDevs struct {
