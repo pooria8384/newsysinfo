@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/shirou/gopsutil/cpu"
-	"github.com/shirou/gopsutil/disk"
 )
 
 type UnixLike struct {
@@ -83,46 +82,20 @@ func (u *UnixLike) Ram() error {
 }
 
 func (u *UnixLike) Disk() error {
-	disks := map[string]struct {
-		total uint
-		free  uint
-	}{}
-
-	partitions, err := disk.Partitions(false)
+	cmd := exec.Command("lsblk", "-o", "MODEL,SERIAL,SIZE", "-d", "-n")
+	output, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("error getting disk partitions: %v", err)
+		return err
 	}
 
-	for _, partition := range partitions {
-		diskInfo, err := disk.Usage(partition.Mountpoint)
-		if err != nil {
-			return fmt.Errorf("error getting disk usage info for %s: %v", partition.Mountpoint, err)
-		}
-		deviceName := disk.GetDiskSerialNumber(partition.Device)
-		if existsDevice, ok := disks[deviceName]; ok {
-			existsDevice.total += uint(diskInfo.Total)
-			existsDevice.free += uint(diskInfo.Free)
-			disks[deviceName] = existsDevice
-		} else {
-			disks[deviceName] = struct {
-				total uint
-				free  uint
-			}{
-				total: uint(diskInfo.Total),
-				free:  uint(diskInfo.Free),
-			}
-		}
+	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.Join(strings.Fields(line), " ")
+		u.SystemInfo.DiskInfos = append(u.SystemInfo.DiskInfos, DiskInfo{Device: line})
 	}
 
-	for dev, dsk := range disks {
-		u.SystemInfo.DiskInfos = append(u.SystemInfo.DiskInfos,
-			DiskInfo{
-				Device:    dev,
-				TotalSize: utils.ToHuman(float64(dsk.total), 0),
-				FreeSize:  utils.ToHuman(float64(dsk.free), 0),
-			},
-		)
-	}
 	return nil
 }
 
