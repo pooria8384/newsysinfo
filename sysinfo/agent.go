@@ -37,7 +37,7 @@ type SystemInfo struct {
 	*RamInfo  `json:"ram"`
 	DiskInfos []DiskInfo `json:"disk"`
 	*CpuInfo  `json:"cpu"`
-	USBDevs   []USBDevs
+	USBDevs   []USBDevs  `json:"usbs"`
 	Monitor   []Monitors `json:"monitor"`
 }
 
