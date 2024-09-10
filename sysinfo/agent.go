@@ -4,7 +4,7 @@ import "runtime"
 
 type CpuInfo struct {
 	Modelname string `json:"model"`
-	Cores     uint64 `json:"cores"`
+	Cores     string `json:"cores"`
 }
 
 type DiskInfo struct {

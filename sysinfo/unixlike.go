@@ -10,8 +10,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-
-	"github.com/shirou/gopsutil/cpu"
 )
 
 type UnixLike struct {
@@ -37,13 +35,34 @@ func (u *UnixLike) Get() *SystemInfo {
 func (u *UnixLike) Cpu() error {
 	cpuInfo := &CpuInfo{}
 
-	data, err := cpu.Info()
+	file, err := os.Open("/proc/cpuinfo")
 	if err != nil {
-		return fmt.Errorf("error getting CPU info: %v", err)
+		return fmt.Errorf("error getting cpu info: %v", err)
 	}
-	if len(data) > 0 {
-		cpuInfo.Modelname = data[0].ModelName
-		cpuInfo.Cores = uint64(len(data))
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if u.SystemInfo.CpuInfo.Cores != "" && u.SystemInfo.CpuInfo.Modelname != "" {
+			break
+		}
+		line := scanner.Text()
+		if strings.HasPrefix(line, "model name") {
+			fields := strings.Split(line, ":")
+			if len(fields) > 1 {
+				cpuInfo.Modelname = strings.TrimSpace(fields[1])
+			}
+		}
+		if strings.HasPrefix(line, "siblings") {
+			fields := strings.Split(line, ":")
+			if len(fields) > 1 {
+				cpuInfo.Cores = strings.TrimSpace(fields[1])
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error getting cpu info: %v", err)
 	}
 	u.SystemInfo.CpuInfo = cpuInfo
 	return nil
