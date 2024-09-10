@@ -2,6 +2,7 @@ package sysinfo
 
 import (
 	"agent/utils"
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -146,6 +147,29 @@ func (u *UnixLike) USB() error {
 	return nil
 }
 
+func (u *UnixLike) Monitor() error {
+	cmd := exec.Command("xrandr")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("error getting monitors: %v", err)
+	}
+
+	output := out.String()
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, " connected") {
+			u.SystemInfo.Monitor = append(u.SystemInfo.Monitor,
+				Monitors{
+					Device: line,
+				},
+			)
+		}
+	}
+	return nil
+}
+
 func (u *UnixLike) Do() {
 	if err := u.Cpu(); err != nil {
 		log.Println("Failed to fetch CPU info")
@@ -161,5 +185,8 @@ func (u *UnixLike) Do() {
 	}
 	if err := u.USB(); err != nil {
 		log.Println("Failed to fetch USB info")
+	}
+	if err := u.Monitor(); err != nil {
+		log.Println("Failed to fetch Monitors info")
 	}
 }

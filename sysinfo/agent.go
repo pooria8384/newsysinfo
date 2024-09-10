@@ -30,12 +30,17 @@ type USBDevs struct {
 	Device string `json:"device"`
 }
 
+type Monitors struct {
+	Device string `json:"device"`
+}
+
 type SystemInfo struct {
 	*OsInfo   `json:"os"`
 	*RamInfo  `json:"ram"`
 	DiskInfos []DiskInfo `json:"disk"`
 	*CpuInfo  `json:"cpu"`
 	USBDevs   []USBDevs
+	Monitor   []Monitors `json:"monitor"`
 }
 
 type Iagent interface {
@@ -44,6 +49,7 @@ type Iagent interface {
 	Disk() error
 	Os() error
 	USB() error
+	Monitor() error
 	Get() *SystemInfo
 	Do()
 }
