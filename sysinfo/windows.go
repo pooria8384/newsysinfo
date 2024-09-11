@@ -27,6 +27,10 @@ type disk struct {
 	Size  uint64
 }
 
+type usb struct {
+	Name string
+}
+
 type Windows struct {
 	*SystemInfo
 }
@@ -57,7 +61,6 @@ func (w *Windows) Cpu() error {
 		return fmt.Errorf("error getting cpu: %v", err)
 	}
 
-	fmt.Println(cpus)
 	cpuInfo.Modelname = cpus[0].Name
 	cpuInfo.Cores = fmt.Sprintf("%d", cpus[0].NumberOfLogicalProcessors)
 	w.SystemInfo.CpuInfo = cpuInfo
@@ -124,21 +127,20 @@ func (w *Windows) Os() error {
 }
 
 func (w *Windows) USB() error {
-	out, err := exec.Command("lsusb").Output()
+	var usbs []usb
+	query := "SELECT Name FROM Win32_PnpEntity WHERE DeviceID LIKE '%USB%'"
+	err := wmi.Query(query, &usbs)
 	if err != nil {
-		return fmt.Errorf("error getting USB devices: %v", err)
+		fmt.Println(err.Error())
+		return fmt.Errorf("error getting usb: %v", err)
 	}
 
-	output := string(out)
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		if line != "" {
-			w.SystemInfo.USBDevs = append(w.SystemInfo.USBDevs,
-				USBDevs{
-					Device: line,
-				},
-			)
-		}
+	for _, usb := range usbs {
+		w.SystemInfo.USBDevs = append(w.SystemInfo.USBDevs,
+			USBDevs{
+				Device: usb.Name,
+			},
+		)
 	}
 	return nil
 }
