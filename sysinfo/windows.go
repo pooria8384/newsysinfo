@@ -13,18 +13,18 @@ import (
 	"github.com/yusufpapurcu/wmi"
 )
 
-type Processors struct {
-	Name                      string
-	NumberOfLogicalProcessors uint16
+type processors struct {
+	name                      string
+	numberOfLogicalProcessors uint16
 }
 
-type Memory struct {
-	Capacity uint64
+type memory struct {
+	capacity uint64
 }
 
-type Disk struct {
-	Model string
-	Size  uint64
+type disk struct {
+	model string
+	size  uint64
 }
 
 type Windows struct {
@@ -50,7 +50,7 @@ func (w *Windows) Get() *SystemInfo {
 func (w *Windows) Cpu() error {
 	cpuInfo := &CpuInfo{}
 
-	var cpus []Processors
+	var cpus []processors
 	query := "SELECT Name, NumberOfCores, NumberOfLogicalProcessors FROM Win32_Processor"
 	err := wmi.Query(query, &cpus)
 	if err != nil {
@@ -58,8 +58,8 @@ func (w *Windows) Cpu() error {
 	}
 
 	fmt.Println(cpus)
-	cpuInfo.Modelname = cpus[0].Name
-	cpuInfo.Cores = fmt.Sprintf("%d", cpus[0].NumberOfLogicalProcessors)
+	cpuInfo.Modelname = cpus[0].name
+	cpuInfo.Cores = fmt.Sprintf("%d", cpus[0].numberOfLogicalProcessors)
 	w.SystemInfo.CpuInfo = cpuInfo
 	return nil
 }
@@ -67,7 +67,7 @@ func (w *Windows) Cpu() error {
 func (w *Windows) Ram() error {
 	ram := &RamInfo{}
 
-	var memories []Memory
+	var memories []memory
 
 	query := "SELECT Capacity FROM Win32_PhysicalMemory"
 	err := wmi.Query(query, &memories)
@@ -76,7 +76,7 @@ func (w *Windows) Ram() error {
 	}
 	var total uint64
 	for _, m := range memories {
-		total += m.Capacity
+		total += m.capacity
 	}
 	ram.Total = utils.ToHuman(float64(total), 0)
 	w.SystemInfo.RamInfo = ram
@@ -85,7 +85,7 @@ func (w *Windows) Ram() error {
 
 func (w *Windows) Disk() error {
 
-	var disks []Disk
+	var disks []disk
 	query := "SELECT Model, Size FROM Win32_DiskDrive"
 	err := wmi.Query(query, &disks)
 	if err != nil {
@@ -93,7 +93,7 @@ func (w *Windows) Disk() error {
 	}
 
 	for _, d := range disks {
-		dd := fmt.Sprintf("%s %s", d.Model, utils.ToHuman(float64(d.Size), 0))
+		dd := fmt.Sprintf("%s %s", d.model, utils.ToHuman(float64(d.size), 0))
 		w.SystemInfo.DiskInfos = append(w.SystemInfo.DiskInfos, DiskInfo{Device: dd})
 	}
 	return nil
