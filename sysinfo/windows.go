@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/shirou/gopsutil/mem"
+	"github.com/yusufpapurcu/wmi"
 )
 
 type Windows struct {
@@ -72,30 +72,41 @@ func (w *Windows) Cpu() error {
 
 func (w *Windows) Ram() error {
 	ram := &RamInfo{}
-	vmStat, err := mem.VirtualMemory()
-	if err != nil {
-		return fmt.Errorf("error getting ram: %v", err)
+	type Memory struct {
+		Capacity uint64
 	}
-	ram.Total = utils.ToHuman(float64(vmStat.Total), 0)
+	var memories []Memory
+
+	query := "SELECT Capacity FROM Win32_PhysicalMemory"
+	err := wmi.Query(query, &memories)
+	if err != nil {
+		return fmt.Errorf("error getting memories: %v", err)
+	}
+	var total uint64
+	for _, m := range memories {
+		total += m.Capacity
+	}
+	ram.Total = utils.ToHuman(float64(total), 0)
 	w.SystemInfo.RamInfo = ram
 	return nil
 }
 
 func (w *Windows) Disk() error {
-	cmd := exec.Command("lsblk", "-o", "MODEL,SERIAL,SIZE", "-d", "-n")
-	output, err := cmd.Output()
+	type Disk struct {
+		Model string
+		Size  uint64
+	}
+	var disks []Disk
+	query := "SELECT Model, Size FROM Win32_DiskDrive"
+	err := wmi.Query(query, &disks)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting disks: %v", err)
 	}
 
-	scanner := bufio.NewScanner(strings.NewReader(string(output)))
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		line = strings.Join(strings.Fields(line), " ")
-		w.SystemInfo.DiskInfos = append(w.SystemInfo.DiskInfos, DiskInfo{Device: line})
+	for _, d := range disks {
+		dd := fmt.Sprintf("%s %s", d.Model, utils.ToHuman(float64(d.Size), 0))
+		w.SystemInfo.DiskInfos = append(w.SystemInfo.DiskInfos, DiskInfo{Device: dd})
 	}
-
 	return nil
 }
 
