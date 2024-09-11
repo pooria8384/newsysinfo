@@ -2,12 +2,12 @@ package sysinfo
 
 import (
 	"agent/utils"
-	"bytes"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/yusufpapurcu/wmi"
@@ -29,6 +29,12 @@ type disk struct {
 
 type usb struct {
 	Name string
+}
+
+type monitor struct {
+	Name         string
+	ScreenWidth  uint32
+	ScreenHeight uint32
 }
 
 type Windows struct {
@@ -131,7 +137,6 @@ func (w *Windows) USB() error {
 	query := "SELECT Name FROM Win32_PnpEntity WHERE DeviceID LIKE '%USB%'"
 	err := wmi.Query(query, &usbs)
 	if err != nil {
-		fmt.Println(err.Error())
 		return fmt.Errorf("error getting usb: %v", err)
 	}
 
@@ -146,24 +151,21 @@ func (w *Windows) USB() error {
 }
 
 func (w *Windows) Monitor() error {
-	cmd := exec.Command("xrandr")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
+	var monitors []monitor
+	query := "SELECT Name, ScreenWidth, ScreenHeight FROM Win32_DesktopMonitor"
+	err := wmi.Query(query, &monitors)
 	if err != nil {
-		return fmt.Errorf("error getting monitors: %v", err)
+		return fmt.Errorf("error getting monitor: %v", err)
 	}
-
-	output := out.String()
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		if strings.Contains(line, " connected") {
-			w.SystemInfo.Monitor = append(w.SystemInfo.Monitor,
-				Monitors{
-					Device: line,
-				},
-			)
+	for _, mon := range monitors {
+		if strings.Contains(mon.Name, "Default") {
+			continue
 		}
+		w.SystemInfo.Monitor = append(w.SystemInfo.Monitor,
+			Monitors{
+				Device: mon.Name + " " + strconv.Itoa(int(mon.ScreenWidth)) + "x" + strconv.Itoa(int(mon.ScreenHeight)),
+			},
+		)
 	}
 	return nil
 }
