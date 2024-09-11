@@ -2,7 +2,6 @@ package sysinfo
 
 import (
 	"agent/utils"
-	"bufio"
 	"bytes"
 	"fmt"
 	"log"
@@ -36,36 +35,20 @@ func (w *Windows) Get() *SystemInfo {
 
 func (w *Windows) Cpu() error {
 	cpuInfo := &CpuInfo{}
-
-	file, err := os.Open("/proc/cpuinfo")
+	type Processors struct {
+		Name                      string
+		NumberOfLogicalProcessors uint16
+	}
+	var cpus []Processors
+	query := "SELECT Name, NumberOfCores, NumberOfLogicalProcessors FROM Win32_Processor"
+	err := wmi.Query(query, &cpus)
 	if err != nil {
-		return fmt.Errorf("error getting cpu info: %v", err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if w.SystemInfo.CpuInfo.Cores != "" && w.SystemInfo.CpuInfo.Modelname != "" {
-			break
-		}
-		line := scanner.Text()
-		if strings.HasPrefix(line, "model name") {
-			fields := strings.Split(line, ":")
-			if len(fields) > 1 {
-				cpuInfo.Modelname = strings.TrimSpace(fields[1])
-			}
-		}
-		if strings.HasPrefix(line, "siblings") {
-			fields := strings.Split(line, ":")
-			if len(fields) > 1 {
-				cpuInfo.Cores = strings.TrimSpace(fields[1])
-			}
-		}
+		return fmt.Errorf("error getting cpu: %v", err)
 	}
 
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error getting cpu info: %v", err)
-	}
+	fmt.Println(cpus)
+	cpuInfo.Modelname = cpus[0].Name
+	cpuInfo.Cores = fmt.Sprintf("%d", cpus[0].NumberOfLogicalProcessors)
 	w.SystemInfo.CpuInfo = cpuInfo
 	return nil
 }
