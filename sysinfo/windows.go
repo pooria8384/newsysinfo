@@ -13,6 +13,20 @@ import (
 	"github.com/yusufpapurcu/wmi"
 )
 
+type Processors struct {
+	Name                      string
+	NumberOfLogicalProcessors uint16
+}
+
+type Memory struct {
+	Capacity uint64
+}
+
+type Disk struct {
+	Model string
+	Size  uint64
+}
+
 type Windows struct {
 	*SystemInfo
 }
@@ -35,10 +49,7 @@ func (w *Windows) Get() *SystemInfo {
 
 func (w *Windows) Cpu() error {
 	cpuInfo := &CpuInfo{}
-	type Processors struct {
-		Name                      string
-		NumberOfLogicalProcessors uint16
-	}
+
 	var cpus []Processors
 	query := "SELECT Name, NumberOfCores, NumberOfLogicalProcessors FROM Win32_Processor"
 	err := wmi.Query(query, &cpus)
@@ -55,9 +66,7 @@ func (w *Windows) Cpu() error {
 
 func (w *Windows) Ram() error {
 	ram := &RamInfo{}
-	type Memory struct {
-		Capacity uint64
-	}
+
 	var memories []Memory
 
 	query := "SELECT Capacity FROM Win32_PhysicalMemory"
@@ -75,10 +84,7 @@ func (w *Windows) Ram() error {
 }
 
 func (w *Windows) Disk() error {
-	type Disk struct {
-		Model string
-		Size  uint64
-	}
+
 	var disks []Disk
 	query := "SELECT Model, Size FROM Win32_DiskDrive"
 	err := wmi.Query(query, &disks)
