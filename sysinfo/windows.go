@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/shirou/gopsutil/mem"
 )
 
 type Windows struct {
@@ -70,24 +72,11 @@ func (w *Windows) Cpu() error {
 
 func (w *Windows) Ram() error {
 	ram := &RamInfo{}
-
-	file, err := os.Open("/proc/meminfo")
+	vmStat, err := mem.VirtualMemory()
 	if err != nil {
-		return fmt.Errorf("error getting meminfo: %v", err)
+		return fmt.Errorf("error getting ram: %v", err)
 	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "MemTotal:") {
-			fields := strings.Fields(line)
-			if len(fields) >= 2 {
-				var totalRAM uint64
-				fmt.Sscanf(fields[1], "%d", &totalRAM)
-				ram.Total = utils.ToHuman(float64(totalRAM), 1)
-			}
-		}
-	}
+	ram.Total = utils.ToHuman(float64(vmStat.Total), 0)
 	w.SystemInfo.RamInfo = ram
 	return nil
 }
