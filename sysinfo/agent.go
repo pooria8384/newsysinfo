@@ -8,9 +8,7 @@ type CpuInfo struct {
 }
 
 type DiskInfo struct {
-	Device    string `json:"device"`
-	TotalSize string `json:"totalsize"`
-	FreeSize  string `json:"freesize"`
+	Device string `json:"device"`
 }
 
 type OsInfo struct {
