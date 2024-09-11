@@ -14,17 +14,17 @@ import (
 )
 
 type processors struct {
-	name                      string
-	numberOfLogicalProcessors uint16
+	Name                      string
+	NumberOfLogicalProcessors uint16
 }
 
 type memory struct {
-	capacity uint64
+	Capacity uint64
 }
 
 type disk struct {
-	model string
-	size  uint64
+	Model string
+	Size  uint64
 }
 
 type Windows struct {
@@ -58,8 +58,8 @@ func (w *Windows) Cpu() error {
 	}
 
 	fmt.Println(cpus)
-	cpuInfo.Modelname = cpus[0].name
-	cpuInfo.Cores = fmt.Sprintf("%d", cpus[0].numberOfLogicalProcessors)
+	cpuInfo.Modelname = cpus[0].Name
+	cpuInfo.Cores = fmt.Sprintf("%d", cpus[0].NumberOfLogicalProcessors)
 	w.SystemInfo.CpuInfo = cpuInfo
 	return nil
 }
@@ -76,7 +76,7 @@ func (w *Windows) Ram() error {
 	}
 	var total uint64
 	for _, m := range memories {
-		total += m.capacity
+		total += m.Capacity
 	}
 	ram.Total = utils.ToHuman(float64(total), 0)
 	w.SystemInfo.RamInfo = ram
@@ -93,7 +93,7 @@ func (w *Windows) Disk() error {
 	}
 
 	for _, d := range disks {
-		dd := fmt.Sprintf("%s %s", d.model, utils.ToHuman(float64(d.size), 0))
+		dd := fmt.Sprintf("%s %s", d.Model, utils.ToHuman(float64(d.Size), 0))
 		w.SystemInfo.DiskInfos = append(w.SystemInfo.DiskInfos, DiskInfo{Device: dd})
 	}
 	return nil
