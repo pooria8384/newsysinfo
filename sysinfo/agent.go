@@ -53,8 +53,7 @@ func NewScanner() Iagent {
 	osType := runtime.GOOS
 	switch osType {
 	case "windows":
-		return nil
-		// 	return NewWindows()
+		return NewWindows()
 	default:
 		return NewUnixLike()
 	}
