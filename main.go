@@ -1,13 +1,23 @@
 package main
 
 import (
+	"agent/services"
 	"agent/sysinfo"
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	err := godotenv.Load("./.env")
+	if err != nil {
+		log.Println(err.Error())
+	}
+}
 
 func main() {
 
@@ -43,9 +53,11 @@ func main() {
 	}
 
 	if currentInfo != newInfo {
-		fmt.Println("There is somthing change")
-	} else {
-		fmt.Println("There is nothing change")
+		sender := services.NewSender()
+		// err := sender.GetAccessToken()
+		// if err == nil {
+		sender.Send()
+		// }
 	}
 
 }
