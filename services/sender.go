@@ -2,7 +2,6 @@ package services
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -25,10 +24,11 @@ func (a *Agent) Send() {
 	api := os.Getenv("ASSET_AGENT_API")
 	token := os.Getenv("ASSET_AGENT_TOKEN")
 
-	requestBody, _ := json.Marshal(map[string]string{
-		"name":        "New Asset",
-		"description": "Asset description",
-	})
+	requestBody, err := os.ReadFile("info.json")
+	if err != nil {
+		log.Fatalf("Failed to read info.json file: %s", err.Error())
+	}
+
 	req, err := http.NewRequest("POST", api, bytes.NewBuffer(requestBody))
 	if err != nil {
 		log.Println("Error making request: ", err.Error())

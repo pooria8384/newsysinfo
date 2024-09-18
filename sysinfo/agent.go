@@ -32,10 +32,10 @@ type Monitors struct {
 type SystemInfo struct {
 	*OsInfo   `json:"os"`
 	*RamInfo  `json:"ram"`
-	DiskInfos []DiskInfo `json:"disk"`
+	DiskInfos []DiskInfo `json:"disks"`
 	*CpuInfo  `json:"cpu"`
 	USBDevs   []USBDevs  `json:"usbs"`
-	Monitor   []Monitors `json:"monitor"`
+	Monitor   []Monitors `json:"monitors"`
 }
 
 type Iagent interface {
