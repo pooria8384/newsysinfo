@@ -54,10 +54,7 @@ func main() {
 
 	if currentInfo != newInfo {
 		sender := services.NewSender()
-		// err := sender.GetAccessToken()
-		// if err == nil {
 		sender.Send()
-		// }
 	}
 
 }
